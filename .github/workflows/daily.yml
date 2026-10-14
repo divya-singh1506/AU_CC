@@ -1,0 +1,31 @@
+name: AU_CC Daily Ads + AppsFlyer to Sheets
+
+on:
+  schedule:
+    - cron: '30 1 * * *'     # 01:30 UTC = 07:00 IST
+  workflow_dispatch:          # "Run workflow" button
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Run pipeline
+        env:
+          DEVELOPER_TOKEN: ${{ secrets.DEVELOPER_TOKEN }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          LOGIN_CUSTOMER_ID: ${{ secrets.LOGIN_CUSTOMER_ID }}
+          CLIENT_CUSTOMER_ID: ${{ secrets.CLIENT_CUSTOMER_ID }}
+          APPSFLYER_API_TOKEN: ${{ secrets.APPSFLYER_API_TOKEN }}
+          APPSFLYER_APP_ID: ${{ secrets.APPSFLYER_APP_ID }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GSHEET_SERVICE_ACCOUNT: ${{ secrets.GSHEET_SERVICE_ACCOUNT }}
+        run: python main.py
