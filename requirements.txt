@@ -1,0 +1,4 @@
+google-ads
+gspread>=5.12
+google-auth
+requests
