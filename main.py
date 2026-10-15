@@ -257,11 +257,21 @@ def open_sheet():
     return gspread.authorize(creds).open_by_key(env('SHEET_ID'))
 
 
+def find_ws(sh, title):
+    """Find a tab ignoring capitals and spaces — Google treats 'Raw' and 'raw' as the same name."""
+    want = title.strip().lower()
+    for ws in sh.worksheets():
+        if ws.title.strip().lower() == want:
+            if ws.title != title:
+                old = ws.title
+                ws.update_title(title)
+                log(f'   renamed tab "{old}" → "{title}"')
+            return ws
+    return None
+
+
 def get_ws(sh, title, cols):
-    try:
-        return sh.worksheet(title)
-    except gspread.WorksheetNotFound:
-        return sh.add_worksheet(title=title, rows=100, cols=max(cols, 5))
+    return find_ws(sh, title) or sh.add_worksheet(title=title, rows=100, cols=max(cols, 5))
 
 
 def write_tab(sh, title, header, rows):
@@ -277,10 +287,10 @@ def write_tab(sh, title, header, rows):
 
 
 def read_tab(sh, title):
-    try:
-        vals = sh.worksheet(title).get_all_values()
-    except gspread.WorksheetNotFound:
+    ws = find_ws(sh, title)
+    if ws is None:
         return []
+    vals = ws.get_all_values()
     if len(vals) < 2:
         return []
     head = [h.strip() for h in vals[0]]
